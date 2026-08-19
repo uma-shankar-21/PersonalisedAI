@@ -1,0 +1,15 @@
+Django
+djangorestframework
+psycopg[binary]
+python-dotenv
+django-cors-headers
+
+langchain
+langchain-ollama
+llama-index
+llama-index-llms-ollama
+
+pgvector
+
+celery
+redis
