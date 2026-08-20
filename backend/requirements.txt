@@ -13,3 +13,5 @@ pgvector
 
 celery
 redis
+djangorestframework-simplejwt
+Faker
