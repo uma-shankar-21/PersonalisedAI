@@ -133,7 +133,11 @@ README.md
 .gitignore
 docker-compose.yml
 ```
+Next Step is complete the 4th step completely and then go to Banking-AI folder(or your custom folder which has both frontend and backend in it, you can check this via running "ls" commad in terminal) and then run below command in terminal to start application.
 
+```bash
+docker compose up -d --build
+```
 ---
 
 # 4. Backend Setup
@@ -220,7 +224,7 @@ myvenv\Scripts\activate
 
 ---
 
-# 15. Frontend API Structure
+# 5. Frontend API Structure
 
 The frontend will communicate with Django through:
 
@@ -254,7 +258,7 @@ This prevents us from creating separate HTTP clients everywhere.
 
 ---
 
-# 16. Environment Variables( `.env.example`)
+# 6. Environment Variables( `.env.example`)
 
 The repository should contain:
 
@@ -289,7 +293,7 @@ For actual development, use the appropriate `.env` file for each application.
 
 ---
 
-# 18. PostgreSQL + pgvector
+# 7. PostgreSQL + pgvector
 
 Our database is:
 
@@ -331,7 +335,7 @@ We will enable the extension during the database setup.
 
 ---
 
-# 19. Redis
+# 8. Redis
 
 Redis is not our primary database.
 
@@ -363,7 +367,7 @@ Redis is therefore part of the architecture, but some of its functionality will 
 
 ---
 
-# 20. Ollama
+# 9. Ollama
 
 Ollama will run Llama 3 locally.
 
@@ -405,7 +409,7 @@ We will connect this after the basic Django application is working.
 
 ---
 
-# 21. Docker
+# 10. Docker
 
 Docker will eventually run:
 
@@ -439,7 +443,7 @@ Docker configuration will be finalized after the local applications are working.
 
 ---
 
-# 22. Verify Django
+# 11. Verify Django
 
 From:
 
@@ -475,7 +479,7 @@ http://localhost:8000
 
 ---
 
-# 23. Verify React
+# 12. Verify React
 
 From:
 
@@ -497,7 +501,7 @@ http://localhost:5173
 
 ---
 
-# 24. Development Workflow
+# 13. Development Workflow
 
 Every time you start working on the project:
 
@@ -534,7 +538,7 @@ Later, Docker Compose will simplify this workflow.
 
 ---
 
-# 26. AI Safety Requirements
+# 14. AI Safety Requirements
 
 The Financial Assistant must follow these rules.
 
@@ -564,7 +568,7 @@ The Financial Assistant must follow these rules.
 
 ---
 
-# 27. Target AI Architecture
+# 15. Target AI Architecture
 
 The final AI request flow will look approximately like:
 
@@ -625,7 +629,7 @@ The LLM will **not** receive unrestricted database access.
 
 ---
 
-# 29. Important Development Rule
+# 16. Important Development Rule
 
 Do not install random packages whenever a new problem appears.
 
@@ -641,7 +645,7 @@ The goal is to build a system that is understandable, secure and maintainable—
 
 ---
 
-# 30. Current Architecture Summary
+# 17. Current Architecture Summary
 
 ```text
 Frontend
