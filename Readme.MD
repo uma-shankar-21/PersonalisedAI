@@ -114,7 +114,7 @@ python3 --version
 Clone the project:
 
 ```bash
-git clone <REPOSITORY_URL>
+git clone https://github.com/uma-shankar-21/PersonalisedAI.git
 ```
 
 Move into the project:
