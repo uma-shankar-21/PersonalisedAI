@@ -39,4 +39,10 @@ path(
     "api/loans/",
     include("apps.loans.urls"),
 ),
+path(
+    "api/assistant/",
+    include(
+        "apps.assistant.urls"
+    ),
+),
 ]
