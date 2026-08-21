@@ -92,7 +92,6 @@ TOOL_REGISTRY = {
     },
 }
 
-
 def get_available_tools():
     """
     Return only tool metadata for the LLM.
