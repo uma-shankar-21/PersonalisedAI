@@ -10,10 +10,23 @@ from apps.assistant.mcp.tools import (
     get_available_tools,
 )
 
+from apps.assistant.domain.relevance import (
+    classify_query,
+)
 
 DOMAIN_FALLBACK = (
     "👋 Please ask a question related to your own banking "
     "information or this bank's products and services."
+)
+
+OTHER_PERSON_FALLBACK = (
+    "🔒 I can only help with your own banking information."
+)
+
+UNAUTHORIZED_FALLBACK = (
+    "⚠️ I can't help with unauthorized access, theft, or "
+    "exploiting banking systems. I can help with legitimate "
+    "questions about your account, transactions, and loans."
 )
 
 
@@ -25,9 +38,60 @@ class ChatService:
         message,
     ):
 
-        # -----------------------------------------
-        # STEP 1: ASK LLM WHICH TOOLS ARE REQUIRED
-        # -----------------------------------------
+        # =============================================
+        # STEP 1: DOMAIN / RELEVANCE CLASSIFICATION
+        # =============================================
+
+        classification = classify_query(
+            message
+        )
+
+        category = classification.get(
+            "category"
+        )
+
+        # ---------------------------------------------
+        # OTHER PERSON'S PRIVATE BANKING DATA
+        # ---------------------------------------------
+
+        if category == "OTHER_PERSON_DATA":
+
+            return {
+                "message": OTHER_PERSON_FALLBACK,
+                "tool_used": None,
+                "tool_result": None,
+            }
+
+        # ---------------------------------------------
+        # UNAUTHORIZED / MALICIOUS REQUEST
+        # ---------------------------------------------
+
+        if category == "UNAUTHORIZED_REQUEST":
+
+            return {
+                "message": UNAUTHORIZED_FALLBACK,
+                "tool_used": None,
+                "tool_result": None,
+            }
+
+        # ---------------------------------------------
+        # CLEARLY OUT OF DOMAIN
+        # ---------------------------------------------
+
+        if category == "OUT_OF_DOMAIN":
+
+            return {
+                "message": DOMAIN_FALLBACK,
+                "tool_used": None,
+                "tool_result": None,
+            }
+
+        # =============================================
+        # STEP 2: EXISTING LLM TOOL ROUTING
+        #
+        # PERSONAL_BANKING and AMBIGUOUS queries
+        # are allowed to continue.
+        # =============================================
 
         tool_decision = self.get_tool_decision(
             message=message,
@@ -38,44 +102,55 @@ class ChatService:
             [],
         )
 
-        # -----------------------------------------
-        # STEP 2: NO TOOL = OUT OF SCOPE
-        # -----------------------------------------
+        # ---------------------------------------------
+        # NO TOOL SELECTED
+        # ---------------------------------------------
 
         if not tools:
 
             return {
-                "message": DOMAIN_FALLBACK,
+                "message": (
+                    "👋 I couldn't find a supported banking action "
+                    "for that question. You can ask me about your "
+                    "accounts, balances, transactions, loans, or "
+                    "loan payments."
+                ),
                 "tool_used": None,
                 "tool_result": None,
             }
 
-        # -----------------------------------------
-        # STEP 3: EXECUTE ALL REQUESTED TOOLS
-        # -----------------------------------------
+        # =============================================
+        # STEP 3: EXECUTE VALID TOOLS
+        # =============================================
 
         tool_results = []
 
-        # Get all valid tools from registry
         available_tools = get_available_tools()
 
         for tool in tools:
 
             tool_name = tool.get(
-                "tool",
+                "tool"
             )
 
             payload = tool.get(
                 "payload",
-                {},
+                {}
             )
 
-            # Never trust the LLM for customer_id.
-            # Always inject it from the API request.
+            # -----------------------------------------
+            # SECURITY:
+            # Never trust customer_id from the LLM
+            # -----------------------------------------
+
             payload["customer_id"] = customer_id
 
-            # Skip invalid or hallucinated tools.
+            # -----------------------------------------
+            # Skip hallucinated tools
+            # -----------------------------------------
+
             if tool_name not in available_tools:
+
                 continue
 
             result = execute_tool(
@@ -90,9 +165,9 @@ class ChatService:
                 }
             )
 
-        # -----------------------------------------
-        # STEP 4: IF NO VALID TOOL WAS EXECUTED
-        # -----------------------------------------
+        # =============================================
+        # STEP 4: NO VALID TOOL EXECUTED
+        # =============================================
 
         if not tool_results:
 
@@ -102,18 +177,18 @@ class ChatService:
                 "tool_result": None,
             }
 
-        # -----------------------------------------
-        # STEP 5: ASK LLM TO GENERATE FINAL RESPONSE
-        # -----------------------------------------
+        # =============================================
+        # STEP 5: FINAL RESPONSE
+        # =============================================
 
         final_response = self.generate_final_response(
             message=message,
             tool_results=tool_results,
         )
 
-        # -----------------------------------------
-        # STEP 6: RETURN RESPONSE
-        # -----------------------------------------
+        # =============================================
+        # STEP 6: RETURN
+        # =============================================
 
         return {
             "message": final_response,
@@ -141,9 +216,19 @@ You are a banking AI assistant.
 Your ONLY job is to decide which available banking tools
 are required to answer the user's question.
 
-AVAILABLE TOOLS:
+AVAILABLE TOOL:
 
-{tools_description}
+get_customer_banking_data
+
+Use this tool when the user's question requires information
+about the user's own banking data.
+
+AVAILABLE RESOURCES:
+
+- accounts
+- transactions
+- loans
+- loan_payments
 
 RULES:
 
@@ -265,6 +350,23 @@ results, clearly say that the information is not available.
 
 6. Do not mention internal tools, MCP, APIs, payloads,
 or implementation details.
+
+7. If the user's question is incomplete or additional
+information would help answer a related banking question,
+ask ONE short and relevant follow-up question.
+
+8. Only ask a follow-up when it is genuinely useful.
+Do not ask unnecessary questions after every response.
+
+9. The follow-up question must be related only to:
+- the user's accounts
+- transactions
+- loans
+- loan payments
+- supported bank products or services
+
+10. Never ask about unrelated topics or request sensitive
+information such as passwords, PINs, OTPs, or credentials.
 
 Now answer the user.
 """

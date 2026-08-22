@@ -42,7 +42,7 @@ def get_customer_loans(
 
 def get_loan_payment_history(
     customer_id,
-    loan_id,
+    loan_id=None,
     start_date=None,
     end_date=None,
 ):
