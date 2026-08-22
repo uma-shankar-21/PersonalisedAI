@@ -15,3 +15,5 @@ celery
 redis
 djangorestframework-simplejwt
 Faker
+sentence-transformers
+scikit-learn
